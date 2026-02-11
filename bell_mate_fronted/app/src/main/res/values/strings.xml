@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BellMate</string>
+    <string name="bottom_nav_bell">闹钟</string>
+    <string name="bottom_nav_plan">计划</string>
+    <string name="bottom_nav_my">我的</string>
+    <string name="bottom_nav_setting">设置</string>
+</resources>

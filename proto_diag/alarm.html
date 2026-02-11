@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BellMate 闹钟</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="screen">
+      <header class="top-app-bar">
+        <div>
+          <h2 class="title" data-i18n="alarm_page_title">闹钟列表</h2>
+          <div class="subtitle" data-i18n="alarm_page_subtitle">侧滑 / 编辑 / AI叫醒</div>
+        </div>
+        <button class="icon-btn ripple" id="addAlarmBtn" data-i18n-title="add_alarm" title="新增闹钟">
+          <span class="material-symbols-outlined">add_alarm</span>
+        </button>
+      </header>
+      <div class="pull-tip" id="pullTip" data-i18n="pull_refresh">下拉刷新闹钟</div>
+      <div class="multi-select-bar" id="multiSelectBar">
+        <strong id="multiSelectCount">已选择 0 项</strong>
+        <div class="multi-select-actions">
+          <button class="btn warn ripple" id="deleteSelectedBtn">删除</button>
+          <button class="btn text ripple" id="cancelSelectedBtn">取消</button>
+        </div>
+      </div>
+      <div class="list" id="alarmList"></div>
+      <button class="fab error ripple" id="pauseTodayFab" data-i18n-title="pause_today_title" title="关闭今日闹钟">
+        <span class="material-symbols-outlined">alarm_off</span>
+      </button>
+      <button class="fab tonal ripple" id="restoreTodayBtn" style="display: none; right: 84px; bottom: 88px">
+        <span class="material-symbols-outlined">restart_alt</span>
+      </button>
+    </main>
+
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
+    <section class="bottom-sheet" id="alarmSheet">
+      <div class="row" style="justify-content: space-between">
+        <div class="row">
+          <span class="material-symbols-outlined">access_alarm</span>
+          <h3 id="sheetTitle" style="margin: 0" data-i18n="new_alarm">新增闹钟</h3>
+        </div>
+        <button class="icon-btn ripple" id="closeSheetBtn"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="field">
+        <label data-i18n="alarm_time">时间</label>
+        <input id="timeInput" type="time" />
+      </div>
+      <div class="field">
+        <label data-i18n="alarm_label">标签</label>
+        <input id="labelInput" data-i18n-placeholder="alarm_label" placeholder="标签" />
+      </div>
+      <div class="field">
+        <label data-i18n="alarm_repeat">重复周期</label>
+        <select id="repeatModeInput">
+          <option value="daily" data-i18n="repeat_daily">每天</option>
+          <option value="workday" data-i18n="repeat_workday">工作日</option>
+          <option value="custom" data-i18n="repeat_custom">自定义星期</option>
+        </select>
+      </div>
+      <div class="field" id="weekdayField" style="display: none">
+        <label data-i18n="weekdays">星期</label>
+        <div class="row" style="flex-wrap: wrap; gap: 6px">
+          <label class="chip"><input type="checkbox" data-day="1" />一</label>
+          <label class="chip"><input type="checkbox" data-day="2" />二</label>
+          <label class="chip"><input type="checkbox" data-day="3" />三</label>
+          <label class="chip"><input type="checkbox" data-day="4" />四</label>
+          <label class="chip"><input type="checkbox" data-day="5" />五</label>
+          <label class="chip"><input type="checkbox" data-day="6" />六</label>
+          <label class="chip"><input type="checkbox" data-day="0" />日</label>
+        </div>
+      </div>
+      <div class="field">
+        <label data-i18n="alarm_ringtone">铃声</label>
+        <select id="ringtoneInput">
+          <option value="default" data-i18n="ring_default">默认铃声</option>
+          <option value="bird" data-i18n="ring_bird">鸟鸣</option>
+          <option value="piano" data-i18n="ring_piano">钢琴</option>
+        </select>
+      </div>
+      <div class="row" style="justify-content: space-between; margin-bottom: 8px">
+        <div class="row">
+          <span class="material-symbols-outlined">volume_up</span>
+          <span data-i18n="ai_wake">AI语音叫醒</span>
+        </div>
+        <button class="switch ripple" id="aiSwitch"></button>
+      </div>
+      <div class="field" id="voiceStyleField" style="display: none">
+        <label data-i18n="ai_style">语音风格</label>
+        <select id="voiceStyleInput">
+          <option value="gentle" data-i18n="style_gentle">温柔</option>
+          <option value="energetic" data-i18n="style_energetic">活力</option>
+          <option value="serious" data-i18n="style_serious">严肃</option>
+        </select>
+      </div>
+      <div class="field" id="aiPlanField" style="display: none">
+        <label data-i18n="ai_linked_plan">关联安排</label>
+        <select id="aiPlanInput"></select>
+      </div>
+      <div class="row" style="justify-content: flex-end">
+        <button class="btn text ripple" id="deleteBtn" style="display: none" data-i18n="action_delete">删除</button>
+        <button class="btn primary ripple" id="saveBtn" data-i18n="action_save">保存</button>
+      </div>
+    </section>
+
+    <div class="dialog-backdrop" id="dialogBackdrop"></div>
+    <div class="dialog" id="confirmDialog">
+      <h3 id="pauseTitle" style="margin-top: 0" data-i18n="pause_today_title">确认关闭今日所有闹钟？</h3>
+      <p class="muted" data-i18n="pause_today_desc">今日将不再响铃，明日自动恢复</p>
+      <div class="row" style="justify-content: flex-end">
+        <button class="btn text ripple" id="cancelPauseBtn" data-i18n="auth_cancel">取消</button>
+        <button class="btn warn ripple" id="confirmPauseBtn" data-i18n="action_confirm">确认</button>
+      </div>
+    </div>
+
+    <section class="ring-screen" id="ringScreen">
+      <div>
+        <p class="chip" style="background: rgba(255, 255, 255, 0.25); color: #fff; border-color: rgba(255, 255, 255, 0.35)" data-i18n="smart_wake">
+          智能叫醒服务
+        </p>
+        <div class="ring-time" id="ringTime">08:50</div>
+        <h3 id="ringLabel">项目会议提醒</h3>
+      </div>
+      <div class="card" style="background: rgba(255, 255, 255, 0.9)">
+        <div class="row">
+          <span class="material-symbols-outlined">volume_up</span>
+          <strong data-i18n="voice_playing">语音播放中</strong>
+          <span class="wave"><i></i><i></i><i></i></span>
+        </div>
+        <p id="aiSpeechText" class="muted"></p>
+        <div class="row" style="justify-content: space-between">
+          <select id="speechLang">
+            <option value="zh-CN">中文</option>
+            <option value="en-US">English</option>
+          </select>
+          <div class="row">
+            <button class="btn text ripple" id="pauseSpeechBtn" data-i18n="action_pause">暂停</button>
+            <button class="btn text ripple" id="replaySpeechBtn" data-i18n="action_replay">重播</button>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="justify-content: space-between">
+        <button class="btn tonal ripple" id="snoozeBtn" style="min-width: 44%" data-i18n="action_snooze">稍后提醒</button>
+        <button class="btn primary ripple" id="stopBtn" style="min-width: 44%" data-i18n="action_stop">关闭</button>
+      </div>
+    </section>
+
+    <script src="./common.js"></script>
+    <script src="./i18n.js"></script>
+    <script>
+      if (!BellMate.isAuthed()) BellMate.postToParent("require-auth", {});
+      BellMate.ensureSeedData();
+      BellMate.autoRecoverPaused();
+      BellMate.applyPreferences(document);
+      BellMateI18n.apply(document);
+      const t = (k, vars) => BellMateI18n.t(k, vars);
+
+      const alarmList = document.getElementById("alarmList");
+      const addAlarmBtn = document.getElementById("addAlarmBtn");
+      const pauseTodayFab = document.getElementById("pauseTodayFab");
+      const restoreTodayBtn = document.getElementById("restoreTodayBtn");
+      const dialogBackdrop = document.getElementById("dialogBackdrop");
+      const confirmDialog = document.getElementById("confirmDialog");
+      const cancelPauseBtn = document.getElementById("cancelPauseBtn");
+      const confirmPauseBtn = document.getElementById("confirmPauseBtn");
+      const pullTip = document.getElementById("pullTip");
+      const multiSelectBar = document.getElementById("multiSelectBar");
+      const multiSelectCount = document.getElementById("multiSelectCount");
+      const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
+      const cancelSelectedBtn = document.getElementById("cancelSelectedBtn");
+
+      const sheetBackdrop = document.getElementById("sheetBackdrop");
+      const alarmSheet = document.getElementById("alarmSheet");
+      const closeSheetBtn = document.getElementById("closeSheetBtn");
+      const sheetTitle = document.getElementById("sheetTitle");
+      const timeInput = document.getElementById("timeInput");
+      const labelInput = document.getElementById("labelInput");
+      const repeatModeInput = document.getElementById("repeatModeInput");
+      const weekdayField = document.getElementById("weekdayField");
+      const ringtoneInput = document.getElementById("ringtoneInput");
+      const aiSwitch = document.getElementById("aiSwitch");
+      const voiceStyleField = document.getElementById("voiceStyleField");
+      const voiceStyleInput = document.getElementById("voiceStyleInput");
+      const aiPlanField = document.getElementById("aiPlanField");
+      const aiPlanInput = document.getElementById("aiPlanInput");
+      const saveBtn = document.getElementById("saveBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
+
+      const ringScreen = document.getElementById("ringScreen");
+      const ringTime = document.getElementById("ringTime");
+      const ringLabel = document.getElementById("ringLabel");
+      const speechLang = document.getElementById("speechLang");
+      const aiSpeechText = document.getElementById("aiSpeechText");
+      const pauseSpeechBtn = document.getElementById("pauseSpeechBtn");
+      const replaySpeechBtn = document.getElementById("replaySpeechBtn");
+      const snoozeBtn = document.getElementById("snoozeBtn");
+      const stopBtn = document.getElementById("stopBtn");
+
+      let editingId = null;
+      let listLimit = 20;
+      let aiEnabled = false;
+      let activeRingAlarm = null;
+      let touchStartY = 0;
+      let pullDistance = 0;
+      let selectionMode = false;
+      let selectedIds = new Set();
+      let longPressTimer = null;
+      let longPressTriggered = false;
+      let pressedCardId = "";
+      speechLang.value = BellMate.getEffectiveLanguage() === "en-US" ? "en-US" : "zh-CN";
+
+      function selectionLabel(count) {
+        return `已选择 ${count} 项`;
+      }
+
+      function renderSelectionBar() {
+        multiSelectBar.classList.toggle("show", selectionMode);
+        multiSelectCount.textContent = selectionLabel(selectedIds.size);
+        deleteSelectedBtn.textContent = t("action_delete");
+        cancelSelectedBtn.textContent = t("auth_cancel");
+      }
+
+      function enterSelectionMode(id) {
+        selectionMode = true;
+        if (id) selectedIds.add(id);
+        renderSelectionBar();
+        render();
+      }
+
+      function toggleSelection(id) {
+        if (!id) return;
+        if (selectedIds.has(id)) selectedIds.delete(id);
+        else selectedIds.add(id);
+        if (!selectedIds.size) selectionMode = false;
+        renderSelectionBar();
+        render();
+      }
+
+      function exitSelectionMode() {
+        selectionMode = false;
+        selectedIds.clear();
+        renderSelectionBar();
+        render();
+      }
+
+      function getAlarms() {
+        return BellMate.readJSON(BellMate.KEYS.alarms, []);
+      }
+      function saveAlarms(items) {
+        BellMate.writeJSON(BellMate.KEYS.alarms, items);
+      }
+      function pausedToday(item) {
+        return item.todayPausedDate === BellMate.todayStr();
+      }
+      function repeatText(item) {
+        if (item.repeatMode === "workday") return t("repeat_workday");
+        if (item.repeatMode === "daily") return t("repeat_daily");
+        return t("repeat_custom_text", { days: (item.weekdays || []).join(",") || "-" });
+      }
+      function getPlanOptions() {
+        return BellMate.readJSON(BellMate.KEYS.plans, [])
+          .filter((p) => !p.done)
+          .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
+      }
+      function renderAiPlanOptions(selectedId) {
+        const plans = getPlanOptions();
+        aiPlanInput.innerHTML = `<option value="auto">${t("ai_plan_auto")}</option>${plans
+          .map((p) => `<option value="${p.id}">${p.title} (${p.datetime.replace("T", " ")})</option>`)
+          .join("")}`;
+        aiPlanInput.value = selectedId || "auto";
+        if (![...aiPlanInput.options].some((opt) => opt.value === aiPlanInput.value)) aiPlanInput.value = "auto";
+      }
+
+      function render() {
+        const data = getAlarms();
+        const shown = data.slice(0, listLimit);
+        if (!shown.length) {
+          alarmList.innerHTML = `<div class="empty"><img src="https://picsum.photos/800/400?random=32" alt="empty" /><p>${t("alarm_empty")}</p></div>`;
+          return;
+        }
+        alarmList.innerHTML = shown
+          .map((a) => {
+            const paused = pausedToday(a);
+            const stateChip = paused
+              ? `<span class="chip gray">${t("alarm_paused_today_chip")}</span>`
+              : a.enabled
+              ? `<span class="chip success">${t("alarm_enabled")}</span>`
+              : `<span class="chip gray">${t("alarm_disabled")}</span>`;
+            return `<article class="card list-item alarm-item ripple ${selectedIds.has(a.id) ? "selected-item" : ""}" data-id="${a.id}">
+                <div class="row">
+                  <span class="material-symbols-outlined">access_alarm</span>
+                  <div class="grow">
+                    <div style="font-size:30px;font-weight:700;line-height:1">${a.time}</div>
+                    <div>${a.label || t("untitled_alarm")} · ${repeatText(a)}</div>
+                    <small class="muted">${a.aiEnabled ? "AI " + a.aiStyle : t("ring_default")} · ${a.ringtone}</small>
+                  </div>
+                  <div class="col" style="align-items:flex-end;gap:8px">
+                    ${stateChip}
+                    <button class="switch ${a.enabled && !paused ? "on" : ""} ripple" data-action="toggle" data-id="${a.id}"></button>
+                  </div>
+                </div>
+                <div class="row" style="justify-content:flex-end;margin-top:8px">
+                  <button class="btn text ripple" data-action="ring-test" data-id="${a.id}">${t("action_test_ring")}</button>
+                </div>
+              </article>`;
+          })
+          .join("");
+        updateRestoreBtn();
+      }
+
+      function openSheet(item) {
+        editingId = item ? item.id : null;
+        sheetTitle.textContent = item ? t("edit_alarm") : t("new_alarm");
+        deleteBtn.style.display = "none";
+        timeInput.value = item?.time || "08:00";
+        labelInput.value = item?.label || "";
+        repeatModeInput.value = item?.repeatMode || "daily";
+        ringtoneInput.value = item?.ringtone || "default";
+        aiEnabled = Boolean(item?.aiEnabled);
+        aiSwitch.classList.toggle("on", aiEnabled);
+        voiceStyleField.style.display = aiEnabled ? "block" : "none";
+        aiPlanField.style.display = aiEnabled ? "block" : "none";
+        voiceStyleInput.value = item?.aiStyle || "gentle";
+        renderAiPlanOptions(item?.aiPlanId || "auto");
+        Array.from(weekdayField.querySelectorAll("input[type=checkbox]")).forEach((cb) => {
+          cb.checked = item?.weekdays?.includes(Number(cb.dataset.day)) || false;
+        });
+        weekdayField.style.display = repeatModeInput.value === "custom" ? "block" : "none";
+        sheetBackdrop.classList.add("show");
+        alarmSheet.classList.add("show");
+      }
+      function closeSheet() {
+        sheetBackdrop.classList.remove("show");
+        alarmSheet.classList.remove("show");
+      }
+      function saveFromSheet() {
+        const time = timeInput.value;
+        if (!time) return BellMate.postToParent("toast", { message: t("no_time_selected") });
+        const data = getAlarms();
+        const payload = {
+          time,
+          label: labelInput.value.trim() || t("untitled_alarm"),
+          repeatMode: repeatModeInput.value,
+          weekdays: Array.from(weekdayField.querySelectorAll("input[type=checkbox]:checked")).map((x) => Number(x.dataset.day)),
+          ringtone: ringtoneInput.value,
+          enabled: true,
+          aiEnabled,
+          aiStyle: voiceStyleInput.value,
+          aiPlanId: aiPlanInput.value || "auto",
+        };
+        if (payload.repeatMode === "workday") payload.weekdays = [1, 2, 3, 4, 5];
+        if (payload.repeatMode === "daily") payload.weekdays = [0, 1, 2, 3, 4, 5, 6];
+        if (editingId) {
+          const item = data.find((x) => x.id === editingId);
+          if (item) Object.assign(item, payload);
+        } else data.push({ id: `a_${Date.now()}`, ...payload });
+        saveAlarms(data);
+        closeSheet();
+        render();
+      }
+      function openPauseDialog() {
+        dialogBackdrop.classList.add("show");
+        confirmDialog.classList.add("show");
+      }
+      function closePauseDialog() {
+        dialogBackdrop.classList.remove("show");
+        confirmDialog.classList.remove("show");
+      }
+      function pauseToday() {
+        const data = getAlarms();
+        const today = BellMate.todayStr();
+        data.forEach((a) => {
+          if (a.enabled) a.todayPausedDate = today;
+        });
+        saveAlarms(data);
+        localStorage.setItem(BellMate.KEYS.pauseDate, today);
+        localStorage.setItem(BellMate.KEYS.pauseUndoUntil, String(Date.now() + 10 * 60 * 1000));
+        closePauseDialog();
+        render();
+        BellMate.postToParent("paused-updated", {});
+      }
+      function restoreToday() {
+        const data = getAlarms();
+        data.forEach((a) => delete a.todayPausedDate);
+        saveAlarms(data);
+        localStorage.removeItem(BellMate.KEYS.pauseDate);
+        localStorage.removeItem(BellMate.KEYS.pauseUndoUntil);
+        render();
+        BellMate.postToParent("toast", { message: t("today_restore_ok") });
+      }
+      function updateRestoreBtn() {
+        const undoUntil = Number(localStorage.getItem(BellMate.KEYS.pauseUndoUntil) || 0);
+        restoreTodayBtn.style.display = Date.now() <= undoUntil ? "grid" : "none";
+      }
+
+      function aiTextFor(alarm) {
+        const plans = BellMate.readJSON(BellMate.KEYS.plans, []);
+        const now = new Date();
+        let target = null;
+        if (alarm.aiPlanId && alarm.aiPlanId !== "auto") target = plans.find((p) => p.id === alarm.aiPlanId && !p.done) || null;
+        if (!target) {
+          target = plans
+            .filter((p) => {
+              const ts = new Date(p.datetime).getTime();
+              return ts >= now.getTime() && ts <= now.getTime() + 24 * 60 * 60 * 1000 && !p.done;
+            })
+            .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())[0];
+        }
+        if (target) {
+          const min = Math.max(1, Math.round((new Date(target.datetime).getTime() - now.getTime()) / 60000));
+          if (alarm.aiStyle === "serious") return t("ai_line_serious", { title: target.title, min });
+          if (alarm.aiStyle === "energetic") return t("ai_line_energetic", { title: target.title, min });
+          return t("ai_line_gentle", { title: target.title, min });
+        }
+        if (alarm.aiStyle === "serious") return t("ai_no_plan_serious");
+        if (alarm.aiStyle === "energetic") return t("ai_no_plan_energetic");
+        return t("ai_no_plan_gentle");
+      }
+
+      function speak(text) {
+        if (!("speechSynthesis" in window)) return;
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = speechLang.value;
+        utter.rate = 1;
+        window.speechSynthesis.speak(utter);
+      }
+      function startRing(alarm) {
+        activeRingAlarm = alarm;
+        ringTime.textContent = alarm.time;
+        ringLabel.textContent = alarm.label || t("untitled_alarm");
+        const text = alarm.aiEnabled ? aiTextFor(alarm) : t("ring_plain_text");
+        aiSpeechText.textContent = text;
+        ringScreen.classList.add("show");
+        if (alarm.aiEnabled) speak(text);
+      }
+      function stopRing() {
+        activeRingAlarm = null;
+        ringScreen.classList.remove("show");
+        window.speechSynthesis?.cancel();
+      }
+      function snoozeRing() {
+        const snapshot = activeRingAlarm;
+        stopRing();
+        setTimeout(() => {
+          if (snapshot) startRing(snapshot);
+        }, 5000);
+      }
+
+      addAlarmBtn.addEventListener("click", () => openSheet(null));
+      closeSheetBtn.addEventListener("click", closeSheet);
+      sheetBackdrop.addEventListener("click", closeSheet);
+      saveBtn.addEventListener("click", saveFromSheet);
+      repeatModeInput.addEventListener("change", () => {
+        weekdayField.style.display = repeatModeInput.value === "custom" ? "block" : "none";
+      });
+      aiSwitch.addEventListener("click", () => {
+        aiEnabled = !aiEnabled;
+        aiSwitch.classList.toggle("on", aiEnabled);
+        voiceStyleField.style.display = aiEnabled ? "block" : "none";
+        aiPlanField.style.display = aiEnabled ? "block" : "none";
+        if (aiEnabled) renderAiPlanOptions(aiPlanInput.value || "auto");
+      });
+
+      pauseTodayFab.addEventListener("click", openPauseDialog);
+      cancelPauseBtn.addEventListener("click", closePauseDialog);
+      dialogBackdrop.addEventListener("click", closePauseDialog);
+      confirmPauseBtn.addEventListener("click", pauseToday);
+      restoreTodayBtn.addEventListener("click", restoreToday);
+      cancelSelectedBtn.addEventListener("click", exitSelectionMode);
+      deleteSelectedBtn.addEventListener("click", () => {
+        if (!selectedIds.size) return;
+        saveAlarms(getAlarms().filter((x) => !selectedIds.has(x.id)));
+        exitSelectionMode();
+      });
+      pauseSpeechBtn.addEventListener("click", () => {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+          pauseSpeechBtn.textContent = t("action_pause");
+        } else {
+          window.speechSynthesis.pause();
+          pauseSpeechBtn.textContent = t("action_resume");
+        }
+      });
+      replaySpeechBtn.addEventListener("click", () => {
+        if (activeRingAlarm) speak(aiSpeechText.textContent);
+      });
+      speechLang.addEventListener("change", () => {
+        if (activeRingAlarm && activeRingAlarm.aiEnabled) speak(aiSpeechText.textContent);
+      });
+      stopBtn.addEventListener("click", stopRing);
+      snoozeBtn.addEventListener("click", snoozeRing);
+
+      alarmList.addEventListener("click", (e) => {
+        const card = e.target.closest(".alarm-item[data-id]");
+        if (selectionMode) {
+          if (!card) return;
+          toggleSelection(card.dataset.id);
+          return;
+        }
+        if (!card) return;
+        const btn = e.target.closest("[data-action]");
+        const id = card.dataset.id;
+        const data = getAlarms();
+        const alarm = data.find((x) => x.id === id);
+        if (!alarm) return;
+        if (btn?.dataset.action === "toggle") {
+          alarm.enabled = !alarm.enabled;
+          saveAlarms(data);
+          return render();
+        }
+        if (btn?.dataset.action === "ring-test") return startRing(alarm);
+        if (!longPressTriggered) openSheet(alarm);
+      });
+
+      alarmList.addEventListener("pointerdown", (e) => {
+        const card = e.target.closest(".alarm-item[data-id]");
+        if (!card) return;
+        if (e.target.closest("button,input,select,textarea,label")) return;
+        pressedCardId = card.dataset.id;
+        clearTimeout(longPressTimer);
+        longPressTriggered = false;
+        longPressTimer = setTimeout(() => {
+          longPressTriggered = true;
+          enterSelectionMode(pressedCardId);
+        }, 450);
+      });
+      alarmList.addEventListener("pointerup", () => {
+        clearTimeout(longPressTimer);
+        setTimeout(() => {
+          longPressTriggered = false;
+        }, 0);
+        pressedCardId = "";
+      });
+      alarmList.addEventListener("pointercancel", () => clearTimeout(longPressTimer));
+      alarmList.addEventListener("pointermove", (e) => {
+        if (!pressedCardId) return;
+        const card = e.target.closest(".alarm-item[data-id]");
+        if (!card || card.dataset.id !== pressedCardId) clearTimeout(longPressTimer);
+      });
+      alarmList.addEventListener("touchstart", (e) => {
+        if (alarmList.scrollTop === 0) touchStartY = e.touches[0].clientY;
+      });
+      alarmList.addEventListener("touchmove", (e) => {
+        if (alarmList.scrollTop !== 0 || !touchStartY) return;
+        pullDistance = e.touches[0].clientY - touchStartY;
+        if (pullDistance > 0) pullTip.textContent = pullDistance > 70 ? t("pull_release") : t("pull_refresh");
+      });
+      alarmList.addEventListener("touchend", () => {
+        if (pullDistance > 70) {
+          pullTip.textContent = t("refreshing");
+          setTimeout(() => {
+            render();
+            pullTip.textContent = t("pull_refresh");
+          }, 600);
+        }
+        touchStartY = 0;
+        pullDistance = 0;
+      });
+      alarmList.addEventListener("scroll", () => {
+        if (alarmList.scrollTop + alarmList.clientHeight >= alarmList.scrollHeight - 18) {
+          const total = getAlarms().length;
+          if (listLimit < total) {
+            listLimit += 8;
+            render();
+          }
+        }
+      });
+
+      window.addEventListener("message", (event) => {
+        const data = event.data || {};
+        if (data.source !== "bellmate-parent") return;
+        if (data.type === "state-refresh") {
+          BellMate.autoRecoverPaused();
+          BellMate.applyPreferences(document);
+          BellMateI18n.apply(document);
+          renderSelectionBar();
+          render();
+        }
+      });
+
+      renderAiPlanOptions("auto");
+      renderSelectionBar();
+      render();
+      updateRestoreBtn();
+      aiSpeechText.textContent = t("ai_no_plan_gentle");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,348 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BellMate 设置</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .content {
+        padding: 16px;
+        overflow: auto;
+        max-width: 600px;
+      }
+      .group + .group {
+        margin-top: 12px;
+      }
+      .item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 48px;
+        border-top: 1px solid #e6eaf6;
+      }
+      .item:first-child {
+        border-top: 0;
+      }
+      .item-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .account-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid #e6eaf6;
+        min-height: 44px;
+        padding: 8px 0;
+      }
+      .account-line:first-child {
+        border-top: 0;
+      }
+      .account-line.active strong {
+        color: var(--md-sys-color-primary);
+      }
+      .mini {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="screen">
+      <header class="top-app-bar">
+        <div>
+          <h2 class="title" data-i18n="settings_title">设置</h2>
+          <div class="subtitle" data-i18n="settings_subtitle">通知、语言、账号、隐私、版本</div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="card group">
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">notifications</span><span data-i18n="notify">消息通知</span></div>
+            <button id="notifySwitch" class="switch ripple"></button>
+          </div>
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">language</span><span data-i18n="language">语言</span></div>
+            <select id="langSelect">
+              <option value="system" data-i18n="follow_system">跟随系统</option>
+              <option value="zh-CN" data-i18n="lang_chinese">中文</option>
+              <option value="en-US" data-i18n="lang_english">English</option>
+            </select>
+          </div>
+          <div class="item">
+            <div>
+              <div class="item-title"><span class="material-symbols-outlined">dark_mode</span><span data-i18n="dark_mode">深色模式</span></div>
+              <div class="mini muted" data-i18n="dark_mode_hint">关闭时跟随系统</div>
+            </div>
+            <button id="darkSwitch" class="switch ripple"></button>
+          </div>
+        </section>
+
+        <section class="card group" id="profileSection">
+          <div class="row" style="justify-content: space-between">
+            <strong data-i18n="profile">个人资料</strong>
+            <span class="material-symbols-outlined">badge</span>
+          </div>
+          <div class="field" style="margin-top: 8px">
+            <label data-i18n="nickname">昵称</label>
+            <input id="nicknameInput" data-i18n-placeholder="nickname" placeholder="昵称" />
+          </div>
+          <div class="field">
+            <label data-i18n="phone">手机号</label>
+            <input id="phoneInput" maxlength="11" data-i18n-placeholder="phone" placeholder="手机号" />
+          </div>
+          <div class="field">
+            <label data-i18n="bio">简介</label>
+            <textarea id="bioInput" rows="2" data-i18n-placeholder="bio" placeholder="简介"></textarea>
+          </div>
+          <button id="saveProfileBtn" class="btn primary ripple" data-i18n="save_profile">保存资料</button>
+        </section>
+
+        <section class="card group">
+          <div class="row" style="justify-content: space-between">
+            <strong data-i18n="switch_account">切换账号</strong>
+            <span class="material-symbols-outlined">manage_accounts</span>
+          </div>
+          <div class="mini muted" style="margin: 6px 0 8px" data-i18n="switch_account_hint">仅显示未过期账号。单账号最多2台设备在线。</div>
+          <div id="accountList"></div>
+        </section>
+
+        <section class="card group">
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">shield</span><span data-i18n="account_security">账号安全</span></div>
+            <button id="securityBtn" class="btn text ripple" data-i18n="action_view">查看</button>
+          </div>
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">delete_sweep</span><span data-i18n="clear_cache">清除缓存</span></div>
+            <button id="clearCacheBtn" class="btn warn ripple" data-i18n="action_clear">清除</button>
+          </div>
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">logout</span><span data-i18n="logout">退出登录</span></div>
+            <button id="logoutBtn" class="btn warn ripple" data-i18n="logout">退出登录</button>
+          </div>
+        </section>
+
+        <section class="card group">
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">info</span><span data-i18n="about_us">关于我们</span></div>
+            <button class="btn text ripple info-btn" data-kind="about" data-i18n="action_view">查看</button>
+          </div>
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">description</span><span data-i18n="user_agreement">用户协议</span></div>
+            <button class="btn text ripple info-btn" data-kind="terms" data-i18n="action_view">查看</button>
+          </div>
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">policy</span><span data-i18n="privacy_policy">隐私政策</span></div>
+            <button class="btn text ripple info-btn" data-kind="privacy" data-i18n="action_view">查看</button>
+          </div>
+          <div class="item">
+            <div class="item-title"><span class="material-symbols-outlined">new_releases</span><span data-i18n="version">版本信息</span></div>
+            <span class="mini muted">v0.3.0-proto</span>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div class="dialog-backdrop" id="dialogBackdrop"></div>
+    <div class="dialog" id="dialog">
+      <h3 id="dialogTitle" style="margin-top: 0">Info</h3>
+      <p id="dialogText" class="muted"></p>
+      <div class="row" style="justify-content: flex-end">
+        <button id="dialogCloseBtn" class="btn primary ripple" data-i18n="action_ok">知道了</button>
+      </div>
+    </div>
+
+    <script src="./common.js"></script>
+    <script src="./i18n.js"></script>
+    <script>
+      if (!BellMate.isAuthed()) BellMate.postToParent("require-auth", {});
+      BellMate.ensureSeedData();
+      BellMate.applyPreferences(document);
+      BellMateI18n.apply(document);
+      const t = (k, vars) => BellMateI18n.t(k, vars);
+
+      const notifySwitch = document.getElementById("notifySwitch");
+      const darkSwitch = document.getElementById("darkSwitch");
+      const langSelect = document.getElementById("langSelect");
+      const nicknameInput = document.getElementById("nicknameInput");
+      const phoneInput = document.getElementById("phoneInput");
+      const bioInput = document.getElementById("bioInput");
+      const saveProfileBtn = document.getElementById("saveProfileBtn");
+      const accountList = document.getElementById("accountList");
+      const securityBtn = document.getElementById("securityBtn");
+      const clearCacheBtn = document.getElementById("clearCacheBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const infoBtns = Array.from(document.querySelectorAll(".info-btn"));
+      const dialogBackdrop = document.getElementById("dialogBackdrop");
+      const dialog = document.getElementById("dialog");
+      const dialogTitle = document.getElementById("dialogTitle");
+      const dialogText = document.getElementById("dialogText");
+      const dialogCloseBtn = document.getElementById("dialogCloseBtn");
+      const profileSection = document.getElementById("profileSection");
+
+      function showDialog(title, text) {
+        dialogTitle.textContent = title;
+        dialogText.textContent = text;
+        dialogBackdrop.classList.add("show");
+        dialog.classList.add("show");
+      }
+      function closeDialog() {
+        dialogBackdrop.classList.remove("show");
+        dialog.classList.remove("show");
+      }
+
+      function updatePrefsFromUI() {
+        BellMate.setPrefs({
+          notifications: notifySwitch.classList.contains("on"),
+          language: langSelect.value,
+          forceDark: darkSwitch.classList.contains("on"),
+        });
+        BellMate.applyPreferences(document);
+        BellMate.postToParent("prefs-updated", {});
+      }
+
+      function renderPrefs() {
+        const p = BellMate.getPrefs();
+        notifySwitch.classList.toggle("on", !!p.notifications);
+        darkSwitch.classList.toggle("on", !!p.forceDark);
+        langSelect.value = p.language || "system";
+      }
+
+      function applyGuestRestrictions() {
+        const isGuest = BellMate.isGuestMode() || !BellMate.getAccount();
+        profileSection.style.display = isGuest ? "none" : "block";
+      }
+
+      function renderProfile() {
+        const profile = BellMate.readJSON(BellMate.KEYS.profile, { nickname: "", phone: "", bio: "" });
+        nicknameInput.value = profile.nickname || "";
+        phoneInput.value = profile.phone || "";
+        bioInput.value = profile.bio || "";
+      }
+
+      function renderAccounts() {
+        const list = BellMate.getAvailableAccounts();
+        const current = BellMate.getAccount();
+        if (!list.length) {
+          accountList.innerHTML = `<p class="mini muted">${t("no_switchable_account")}</p>`;
+          return;
+        }
+        accountList.innerHTML = list
+          .map(
+            (x) => `<div class="account-line ${x.account === current ? "active" : ""}">
+              <div>
+                <strong>${x.account}</strong>
+                <div class="mini muted">${t("expire_at")}: ${new Date(x.expiresAt).toLocaleString()}</div>
+              </div>
+              <div class="row" style="gap:6px">
+                ${
+                  x.account === current
+                    ? `<span class="chip success">${t("current_account")}</span>`
+                    : `<button class="btn tonal ripple switch-account-btn" data-account="${x.account}">${t("action_switch")}</button>`
+                }
+                <button class="btn text ripple remove-account-btn" data-account="${x.account}">${t("action_delete")}</button>
+              </div>
+            </div>`
+          )
+          .join("");
+      }
+
+      notifySwitch.addEventListener("click", () => {
+        notifySwitch.classList.toggle("on");
+        updatePrefsFromUI();
+      });
+      darkSwitch.addEventListener("click", () => {
+        darkSwitch.classList.toggle("on");
+        updatePrefsFromUI();
+      });
+      langSelect.addEventListener("change", updatePrefsFromUI);
+
+      saveProfileBtn.addEventListener("click", () => {
+        BellMate.writeJSON(BellMate.KEYS.profile, {
+          nickname: nicknameInput.value.trim() || "BellMate 用户",
+          phone: phoneInput.value.trim(),
+          bio: bioInput.value.trim(),
+        });
+        BellMate.postToParent("toast", { message: t("profile_saved") });
+        BellMate.postToParent("prefs-updated", {});
+      });
+
+      accountList.addEventListener("click", (e) => {
+        const removeBtn = e.target.closest(".remove-account-btn");
+        if (removeBtn) {
+          const account = removeBtn.dataset.account;
+          const result = BellMate.removeAccount(account);
+          if (!result.ok) {
+            BellMate.postToParent("toast", { message: t("switch_failed") });
+            return;
+          }
+          BellMate.postToParent("toast", { message: `${account} ${t("action_delete")}` });
+          renderAccounts();
+          if (!BellMate.isAuthed()) BellMate.postToParent("navigate", { route: "login" });
+          return;
+        }
+
+        const btn = e.target.closest(".switch-account-btn");
+        if (!btn) return;
+        const account = btn.dataset.account;
+        const result = BellMate.switchAccount(account);
+        if (!result.ok) {
+          BellMate.postToParent("toast", { message: result.message || t("switch_failed") });
+          return;
+        }
+        BellMate.postToParent("toast", { message: t("switched_to", { account }) });
+        renderAccounts();
+        BellMate.postToParent("navigate", { route: "alarm" });
+      });
+
+      securityBtn.addEventListener("click", () => showDialog(t("account_security"), t("security_msg")));
+      clearCacheBtn.addEventListener("click", () => {
+        BellMate.clearAppCache();
+        BellMate.postToParent("toast", { message: t("cache_cleared") });
+        BellMate.postToParent("prefs-updated", {});
+      });
+      logoutBtn.addEventListener("click", () => {
+        BellMate.logoutCurrent();
+        BellMate.postToParent("toast", { message: t("logged_out") });
+        BellMate.postToParent("navigate", { route: "login" });
+      });
+
+      infoBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const kind = btn.dataset.kind;
+          if (kind === "about") showDialog(t("about_us"), t("about_msg"));
+          if (kind === "terms") showDialog(t("user_agreement"), t("terms_msg"));
+          if (kind === "privacy") showDialog(t("privacy_policy"), t("privacy_msg"));
+        });
+      });
+
+      dialogCloseBtn.addEventListener("click", closeDialog);
+      dialogBackdrop.addEventListener("click", closeDialog);
+
+      window.addEventListener("message", (event) => {
+        const data = event.data || {};
+        if (data.source !== "bellmate-parent") return;
+        if (data.type === "state-refresh") {
+          BellMate.applyPreferences(document);
+          BellMateI18n.apply(document);
+          renderPrefs();
+          applyGuestRestrictions();
+          renderProfile();
+          renderAccounts();
+        }
+      });
+
+      renderPrefs();
+      applyGuestRestrictions();
+      renderProfile();
+      renderAccounts();
+    </script>
+  </body>
+</html>

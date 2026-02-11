@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BellMate 计划</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="screen">
+      <header class="top-app-bar">
+        <div>
+          <h2 class="title" data-i18n="plan_page_title">计划安排</h2>
+          <div class="subtitle row" style="gap: 4px">
+            <span class="material-symbols-outlined">task</span>
+            <span data-i18n="plan_page_subtitle">今日 / 未来</span>
+          </div>
+        </div>
+      </header>
+
+      <div style="padding: 8px 16px 0">
+        <div class="tabs" id="tabWrap">
+          <button class="tab active ripple" data-filter="today" data-i18n="tab_today">今日计划</button>
+          <button class="tab ripple" data-filter="future" data-i18n="tab_future">未来计划</button>
+        </div>
+      </div>
+      <div class="multi-select-bar" id="multiSelectBar">
+        <strong id="multiSelectCount">已选择 0 项</strong>
+        <div class="multi-select-actions">
+          <button class="btn warn ripple" id="deleteSelectedBtn">删除</button>
+          <button class="btn text ripple" id="cancelSelectedBtn">取消</button>
+        </div>
+      </div>
+
+      <div class="list" id="planList"></div>
+      <button class="fab primary ripple" id="addPlanFab" data-i18n-title="add_plan" title="新增计划">
+        <span class="material-symbols-outlined">add</span>
+      </button>
+    </main>
+
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
+    <section class="bottom-sheet" id="sheet">
+      <div class="row" style="justify-content: space-between">
+        <h3 id="sheetTitle" style="margin: 0" data-i18n="new_plan">新增计划</h3>
+        <button class="icon-btn ripple" id="closeSheetBtn"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="field">
+        <label data-i18n="plan_title">标题</label>
+        <input id="planTitleInput" data-i18n-placeholder="plan_title" placeholder="标题" />
+      </div>
+      <div class="field">
+        <label data-i18n="plan_time">时间</label>
+        <input id="planTimeInput" type="datetime-local" />
+      </div>
+      <div class="field">
+        <label data-i18n="plan_remark">备注</label>
+        <textarea id="planRemarkInput" rows="3" data-i18n-placeholder="plan_remark" placeholder="备注"></textarea>
+      </div>
+      <div class="field">
+        <label data-i18n="plan_priority">优先级</label>
+        <select id="priorityInput">
+          <option value="high" data-i18n="priority_high">高优先级</option>
+          <option value="medium" data-i18n="priority_medium">中优先级</option>
+          <option value="low" data-i18n="priority_low">低优先级</option>
+        </select>
+      </div>
+      <div class="row" style="justify-content: flex-end">
+        <button class="btn text ripple" id="deletePlanBtn" style="display: none" data-i18n="action_delete">删除</button>
+        <button class="btn primary ripple" id="savePlanBtn" data-i18n="action_save">保存</button>
+      </div>
+    </section>
+
+    <script src="./common.js"></script>
+    <script src="./i18n.js"></script>
+    <script>
+      if (!BellMate.isAuthed()) BellMate.postToParent("require-auth", {});
+      BellMate.ensureSeedData();
+      BellMate.applyPreferences(document);
+      BellMateI18n.apply(document);
+      const t = (k, vars) => BellMateI18n.t(k, vars);
+
+      const planList = document.getElementById("planList");
+      const tabs = Array.from(document.querySelectorAll("#tabWrap .tab"));
+      const addPlanFab = document.getElementById("addPlanFab");
+      const sheetBackdrop = document.getElementById("sheetBackdrop");
+      const sheet = document.getElementById("sheet");
+      const sheetTitle = document.getElementById("sheetTitle");
+      const closeSheetBtn = document.getElementById("closeSheetBtn");
+      const planTitleInput = document.getElementById("planTitleInput");
+      const planTimeInput = document.getElementById("planTimeInput");
+      const planRemarkInput = document.getElementById("planRemarkInput");
+      const priorityInput = document.getElementById("priorityInput");
+      const savePlanBtn = document.getElementById("savePlanBtn");
+      const deletePlanBtn = document.getElementById("deletePlanBtn");
+      const multiSelectBar = document.getElementById("multiSelectBar");
+      const multiSelectCount = document.getElementById("multiSelectCount");
+      const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
+      const cancelSelectedBtn = document.getElementById("cancelSelectedBtn");
+
+      let filter = "today";
+      let editingId = null;
+      let dragId = null;
+      let selectionMode = false;
+      let selectedIds = new Set();
+      let longPressTimer = null;
+      let longPressTriggered = false;
+      let pressedCardId = "";
+
+      const priorityMeta = {
+        high: { color: "#b3261e", icon: "priority_high", textKey: "priority_high" },
+        medium: { color: "#f9a825", icon: "notifications", textKey: "priority_medium" },
+        low: { color: "#2e7d32", icon: "check_circle", textKey: "priority_low" },
+      };
+
+      function getPlans() {
+        return BellMate.readJSON(BellMate.KEYS.plans, []).sort(
+          (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
+        );
+      }
+
+      function selectionLabel(count) {
+        return `已选择 ${count} 项`;
+      }
+
+      function renderSelectionBar() {
+        multiSelectBar.classList.toggle("show", selectionMode);
+        multiSelectCount.textContent = selectionLabel(selectedIds.size);
+        deleteSelectedBtn.textContent = t("action_delete");
+        cancelSelectedBtn.textContent = t("auth_cancel");
+      }
+
+      function enterSelectionMode(id) {
+        selectionMode = true;
+        if (id) selectedIds.add(id);
+        renderSelectionBar();
+        render();
+      }
+
+      function toggleSelection(id) {
+        if (!id) return;
+        if (selectedIds.has(id)) selectedIds.delete(id);
+        else selectedIds.add(id);
+        if (!selectedIds.size) selectionMode = false;
+        renderSelectionBar();
+        render();
+      }
+
+      function exitSelectionMode() {
+        selectionMode = false;
+        selectedIds.clear();
+        renderSelectionBar();
+        render();
+      }
+      function savePlans(data) {
+        BellMate.writeJSON(BellMate.KEYS.plans, data);
+        BellMate.postToParent("toast", { message: t("plans_updated") });
+      }
+
+      function filteredPlans() {
+        const now = new Date();
+        const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const t1 = new Date(t0.getTime() + 24 * 60 * 60 * 1000);
+        return getPlans().filter((p) => {
+          const d = new Date(p.datetime);
+          if (filter === "today") return d >= t0 && d < t1;
+          return d >= t1;
+        });
+      }
+
+      function priorityBadge(priority) {
+        const m = priorityMeta[priority] || priorityMeta.medium;
+        return `<span class="chip" style="color:${m.color};border-color:${m.color}40;background:${m.color}15">
+          <span class="material-symbols-outlined" style="font-size:18px">${m.icon}</span>${t(m.textKey)}
+        </span>`;
+      }
+
+      function render() {
+        const list = filteredPlans();
+        if (!list.length) {
+          planList.innerHTML = `<div class="empty"><img src="https://picsum.photos/800/400?random=31" alt="empty" /><p>${t("plan_empty")}</p></div>`;
+          return;
+        }
+        planList.innerHTML = list
+          .map(
+            (p) => `<article class="card list-item ${selectedIds.has(p.id) ? "selected-item" : ""}" draggable="${
+              selectionMode ? "false" : "true"
+            }" data-id="${p.id}">
+              <div class="row">
+                <button class="icon-btn ripple mark-done" data-id="${p.id}" title="${t("mark_done")}">
+                  <span class="material-symbols-outlined">${p.done ? "check_circle" : "radio_button_unchecked"}</span>
+                </button>
+                <div class="grow">
+                  <div style="font-weight:700;${p.done ? "text-decoration:line-through;color:#888;" : ""}">${p.title}</div>
+                  <small class="muted">${p.datetime.replace("T", " ")}</small>
+                  <div>${priorityBadge(p.priority)}</div>
+                  ${p.remark ? `<small class="muted">${p.remark}</small>` : ""}
+                </div>
+              </div>
+            </article>`
+          )
+          .join("");
+      }
+
+      function openSheet(plan) {
+        editingId = plan ? plan.id : null;
+        sheetTitle.textContent = plan ? t("edit_plan") : t("new_plan");
+        deletePlanBtn.style.display = plan ? "inline-flex" : "none";
+        planTitleInput.value = plan?.title || "";
+        planTimeInput.value = plan?.datetime || "";
+        planRemarkInput.value = plan?.remark || "";
+        priorityInput.value = plan?.priority || "medium";
+        sheetBackdrop.classList.add("show");
+        sheet.classList.add("show");
+      }
+      function closeSheet() {
+        sheetBackdrop.classList.remove("show");
+        sheet.classList.remove("show");
+      }
+
+      tabs.forEach((tbtn) => {
+        tbtn.addEventListener("click", () => {
+          tabs.forEach((x) => x.classList.remove("active"));
+          tbtn.classList.add("active");
+          filter = tbtn.dataset.filter;
+          render();
+        });
+      });
+      addPlanFab.addEventListener("click", () => openSheet(null));
+      closeSheetBtn.addEventListener("click", closeSheet);
+      sheetBackdrop.addEventListener("click", closeSheet);
+
+      savePlanBtn.addEventListener("click", () => {
+        const title = planTitleInput.value.trim();
+        const datetime = planTimeInput.value;
+        if (!title || !datetime) {
+          BellMate.postToParent("toast", { message: t("required_title_time") });
+          return;
+        }
+        const data = getPlans();
+        if (editingId) {
+          const item = data.find((x) => x.id === editingId);
+          if (item) {
+            item.title = title;
+            item.datetime = datetime;
+            item.remark = planRemarkInput.value.trim();
+            item.priority = priorityInput.value;
+          }
+        } else {
+          data.push({
+            id: `p_${Date.now()}`,
+            title,
+            datetime,
+            remark: planRemarkInput.value.trim(),
+            priority: priorityInput.value,
+            done: false,
+          });
+        }
+        savePlans(data);
+        closeSheet();
+        render();
+      });
+
+      deletePlanBtn.addEventListener("click", () => {
+        if (!editingId) return;
+        savePlans(getPlans().filter((x) => x.id !== editingId));
+        closeSheet();
+        render();
+      });
+      cancelSelectedBtn.addEventListener("click", exitSelectionMode);
+      deleteSelectedBtn.addEventListener("click", () => {
+        if (!selectedIds.size) return;
+        savePlans(getPlans().filter((x) => !selectedIds.has(x.id)));
+        exitSelectionMode();
+      });
+
+      planList.addEventListener("click", (e) => {
+        const card = e.target.closest(".list-item[data-id]");
+        if (selectionMode) {
+          if (!card) return;
+          toggleSelection(card.dataset.id);
+          return;
+        }
+        const doneBtn = e.target.closest(".mark-done");
+        if (doneBtn) {
+          const data = getPlans();
+          const item = data.find((x) => x.id === doneBtn.dataset.id);
+          if (item) item.done = !item.done;
+          savePlans(data);
+          render();
+          return;
+        }
+        if (!card || longPressTriggered) return;
+        const item = getPlans().find((x) => x.id === card.dataset.id);
+        openSheet(item || null);
+      });
+
+      planList.addEventListener("dragstart", (e) => {
+        if (selectionMode) return e.preventDefault();
+        const card = e.target.closest("[data-id]");
+        if (!card) return;
+        dragId = card.dataset.id;
+      });
+      planList.addEventListener("dragover", (e) => e.preventDefault());
+      planList.addEventListener("drop", (e) => {
+        if (selectionMode) return;
+        e.preventDefault();
+        const card = e.target.closest("[data-id]");
+        if (!card || !dragId || card.dataset.id === dragId) return;
+        const data = getPlans();
+        const from = data.findIndex((x) => x.id === dragId);
+        const to = data.findIndex((x) => x.id === card.dataset.id);
+        if (from < 0 || to < 0) return;
+        const [m] = data.splice(from, 1);
+        data.splice(to, 0, m);
+        BellMate.writeJSON(BellMate.KEYS.plans, data);
+        render();
+      });
+
+      planList.addEventListener("pointerdown", (e) => {
+        const card = e.target.closest(".list-item[data-id]");
+        if (!card) return;
+        if (e.target.closest("button,input,select,textarea,label")) return;
+        pressedCardId = card.dataset.id;
+        clearTimeout(longPressTimer);
+        longPressTriggered = false;
+        longPressTimer = setTimeout(() => {
+          longPressTriggered = true;
+          enterSelectionMode(pressedCardId);
+        }, 450);
+      });
+      planList.addEventListener("pointerup", () => {
+        clearTimeout(longPressTimer);
+        setTimeout(() => {
+          longPressTriggered = false;
+        }, 0);
+        pressedCardId = "";
+      });
+      planList.addEventListener("pointercancel", () => {
+        clearTimeout(longPressTimer);
+        pressedCardId = "";
+      });
+      planList.addEventListener("pointermove", (e) => {
+        if (!pressedCardId) return;
+        const card = e.target.closest(".list-item[data-id]");
+        if (!card || card.dataset.id !== pressedCardId) clearTimeout(longPressTimer);
+      });
+
+      window.addEventListener("message", (event) => {
+        const data = event.data || {};
+        if (data.source !== "bellmate-parent") return;
+        if (data.type === "state-refresh") {
+          BellMate.applyPreferences(document);
+          BellMateI18n.apply(document);
+          renderSelectionBar();
+          render();
+        }
+      });
+
+      renderSelectionBar();
+      render();
+    </script>
+  </body>
+</html>

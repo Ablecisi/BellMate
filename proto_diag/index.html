@@ -1,0 +1,274 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>BellMate 拌铃</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .phone-shell {
+      width: min(100vw, 430px);
+      height: min(100vh, 920px);
+      margin: auto;
+      border-radius: 32px;
+      background: #fff;
+      box-shadow: 0 30px 80px rgba(9, 16, 46, 0.28);
+      border: 1px solid #d6daf3;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-bar {
+      height: 24px;
+      padding: 0 16px;
+      font-size: 12px;
+      color: #6f7690;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .frame-wrap {
+      position: relative;
+      flex: 1;
+      background: #f8f9ff;
+    }
+
+    #appFrame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    #appFrame.ready {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .top-banner {
+      margin: 8px 16px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #fff4e5;
+      border: 1px solid #ffe0b2;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #7a4c00;
+    }
+
+    .top-toast {
+      position: fixed;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-140%);
+      min-width: 220px;
+      max-width: min(92vw, 360px);
+      background: #1f2a59;
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 20px rgba(18, 23, 53, 0.3);
+      transition: transform 220ms ease;
+      z-index: 100;
+      text-align: center;
+    }
+
+    .top-toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="phone-shell">
+    <div class="status-bar">
+      <span id="clock">09:41</span>
+      <span>5G 98%</span>
+    </div>
+    <header class="top-app-bar">
+      <h1 class="title">BellMate</h1>
+      <button class="icon-btn ripple" id="goLoginBtn" title="账户中心">
+        <span class="material-symbols-outlined">account_circle</span>
+      </button>
+    </header>
+    <div id="pauseBanner" class="top-banner">
+      <span class="material-symbols-outlined">pause_circle</span>
+      <span class="grow">今日闹钟已暂停，明日 00:00 自动恢复</span>
+      <button class="btn text ripple" id="undoPauseBtn">恢复</button>
+    </div>
+    <div class="frame-wrap">
+      <iframe id="appFrame" src="./login.html" title="BellMate App Frame"></iframe>
+    </div>
+    <nav class="bottom-nav">
+      <button class="nav-item active ripple" data-target="alarm">
+        <span class="material-symbols-outlined">access_alarm</span>
+        <small>闹钟</small>
+      </button>
+      <button class="nav-item ripple" data-target="plan">
+        <span class="material-symbols-outlined">task</span>
+        <small>计划</small>
+      </button>
+      <button class="nav-item ripple" data-target="my">
+        <span class="material-symbols-outlined">person</span>
+        <small>我的</small>
+      </button>
+      <button class="nav-item ripple" data-target="settings">
+        <span class="material-symbols-outlined">settings</span>
+        <small>设置</small>
+      </button>
+    </nav>
+  </div>
+
+  <div class="snackbar" id="snackbar">
+    <span id="snackbarText"></span>
+    <button id="snackbarAction" class="btn text ripple" style="color: #90caf9">确认</button>
+  </div>
+  <div id="topToast" class="top-toast">登录成功</div>
+
+  <script src="./common.js"></script>
+  <script>
+    const routes = {
+      login: "./login.html",
+      alarm: "./alarm.html",
+      plan: "./plan.html",
+      my: "./my.html",
+      settings: "./settings.html",
+    };
+    const frame = document.getElementById("appFrame");
+    const navItems = Array.from(document.querySelectorAll(".nav-item"));
+    const goLoginBtn = document.getElementById("goLoginBtn");
+    const pauseBanner = document.getElementById("pauseBanner");
+    const undoPauseBtn = document.getElementById("undoPauseBtn");
+    const snackbar = document.getElementById("snackbar");
+    const snackbarText = document.getElementById("snackbarText");
+    const snackbarAction = document.getElementById("snackbarAction");
+    const clock = document.getElementById("clock");
+    const topToast = document.getElementById("topToast");
+    let currentRoute = "login";
+    let snackbarTimer = null;
+    let snackbarActionCb = null;
+    let topToastTimer = null;
+
+    BellMate.ensureDevice();
+    BellMate.ensureSeedData();
+    BellMate.autoRecoverPaused();
+    BellMate.applyPreferences(document);
+
+    function tickClock() {
+      const d = new Date();
+      clock.textContent = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    function showSnackbar(message, actionText, action) {
+      snackbarText.textContent = message;
+      snackbarAction.textContent = actionText || "";
+      snackbarAction.style.display = actionText ? "inline-flex" : "none";
+      snackbarActionCb = action || null;
+      snackbar.classList.add("show");
+      clearTimeout(snackbarTimer);
+      snackbarTimer = setTimeout(() => snackbar.classList.remove("show"), 3500);
+    }
+
+    function showTopToast(message) {
+      topToast.textContent = message;
+      topToast.classList.add("show");
+      clearTimeout(topToastTimer);
+      topToastTimer = setTimeout(() => topToast.classList.remove("show"), 1800);
+    }
+
+    function setActive(target) {
+      navItems.forEach((n) => n.classList.toggle("active", n.dataset.target === target));
+    }
+
+    function guardRoute(target) {
+      if (target !== "login" && !BellMate.isAuthed()) return "login";
+      return target;
+    }
+
+    function navigate(target) {
+      const next = guardRoute(target);
+      currentRoute = next;
+      setActive(next);
+      frame.classList.remove("ready");
+      frame.src = routes[next];
+      document.querySelector(".bottom-nav").style.visibility = next === "login" ? "hidden" : "visible";
+    }
+
+    frame.addEventListener("load", () => {
+      frame.classList.add("ready");
+      BellMate.postToChild(frame, "host-route", { route: currentRoute });
+    });
+
+    navItems.forEach((item) => item.addEventListener("click", () => navigate(item.dataset.target)));
+    snackbarAction.addEventListener("click", () => {
+      if (snackbarActionCb) snackbarActionCb();
+      snackbar.classList.remove("show");
+    });
+
+    goLoginBtn.addEventListener("click", () => {
+      if (BellMate.isAuthed()) {
+        BellMate.logoutCurrent();
+        showSnackbar("已退出登录", "");
+        navigate("login");
+        return;
+      }
+      navigate("login");
+    });
+
+    function updatePauseBanner() {
+      const paused = localStorage.getItem(BellMate.KEYS.pauseDate) === BellMate.todayStr();
+      const undoUntil = Number(localStorage.getItem(BellMate.KEYS.pauseUndoUntil) || 0);
+      pauseBanner.style.display = paused ? "flex" : "none";
+      undoPauseBtn.style.display = Date.now() <= undoUntil ? "inline-flex" : "none";
+    }
+
+    undoPauseBtn.addEventListener("click", () => {
+      const alarms = BellMate.readJSON(BellMate.KEYS.alarms, []);
+      alarms.forEach((a) => delete a.todayPausedDate);
+      BellMate.writeJSON(BellMate.KEYS.alarms, alarms);
+      localStorage.removeItem(BellMate.KEYS.pauseDate);
+      localStorage.removeItem(BellMate.KEYS.pauseUndoUntil);
+      updatePauseBanner();
+      showSnackbar("今日闹钟已恢复", "");
+      BellMate.postToChild(frame, "state-refresh", {});
+    });
+
+    window.addEventListener("message", (event) => {
+      const data = event.data || {};
+      if (data.source !== "bellmate-child") return;
+
+      if (data.type === "navigate") navigate(data.payload.route);
+      if (data.type === "auth-success") {
+        showTopToast(data.payload?.guest ? "已进入游客模式" : "登录成功");
+        navigate("alarm");
+      }
+      if (data.type === "prefs-updated") {
+        BellMate.applyPreferences(document);
+        BellMate.postToChild(frame, "state-refresh", {});
+      }
+      if (data.type === "require-auth") navigate("login");
+      if (data.type === "toast") showSnackbar(data.payload.message, data.payload.actionText, null);
+      if (data.type === "paused-updated") {
+        updatePauseBanner();
+        showSnackbar("今日闹钟已暂停，明日自动恢复。", "撤销", () => undoPauseBtn.click());
+      }
+    });
+
+    tickClock();
+    setInterval(tickClock, 1000);
+    updatePauseBanner();
+    navigate(BellMate.isAuthed() ? "alarm" : "login");
+  </script>
+</body>
+
+</html>

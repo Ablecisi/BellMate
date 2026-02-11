@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: bell_mate_backed
