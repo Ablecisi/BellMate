@@ -2,7 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 权限声明 -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- 网络访问 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- 检查wifi网络状态 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- 检查网络状态 -->
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" /> <!-- 允许修改网络状态 -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!-- 手机状态权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 写入外部存储 -->
 
     <application
         android:allowBackup="true"
