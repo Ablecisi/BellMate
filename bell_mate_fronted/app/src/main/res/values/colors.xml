@@ -2,4 +2,27 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="selected_item_background">#E3F2FD</color>
+    <color name="transparent">#00000000</color>
+    
+    <color name="md_sys_color_primary">#3f51b5</color>
+    <color name="md_sys_color_on_primary">#ffffff</color>
+    <color name="md_sys_color_primary_container">#e8eaf6</color>
+    <color name="md_sys_color_secondary">#5c6bc0</color>
+    <color name="md_sys_color_surface">#f8f9ff</color>
+    <color name="md_sys_color_surface_variant">#e8eaf6</color>
+    <color name="md_sys_color_outline">#b0b7d8</color>
+    <color name="md_sys_color_outline_variant">#d0d5e6</color>
+    <color name="md_sys_color_on_surface">#1b1c20</color>
+    <color name="md_sys_color_on_surface_variant">#5f6368</color>
+    <color name="md_sys_color_error">#b3261e</color>
+    <color name="md_sys_color_success">#2e7d32</color>
+    <color name="md_sys_color_warning">#f9a825</color>
+    
+    <color name="login_panel_background">#f0ffffff</color>
+    <color name="login_panel_border">#e5e9fb</color>
+    <color name="switcher_text_inactive">#3b4263</color>
+    <color name="switcher_text_active">#2a377e</color>
+    <color name="social_button_text">#2b366f</color>
+    <color name="social_button_border">#d7defd</color>
 </resources>

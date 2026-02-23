@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/authLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="chat"
+            android:textSize="24sp"
+            android:textColor="@color/md_sys_color_on_surface"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/authTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="授权登录"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/md_sys_color_on_surface" />
+
+    </LinearLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BellMate 正在申请读取基础账号资料。"
+        android:textSize="14sp"
+        android:textColor="@color/md_sys_color_on_surface_variant"
+        android:layout_marginBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancelAuthBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="取消"
+            android:textSize="14sp"
+            android:textColor="@color/md_sys_color_primary"
+            android:backgroundTint="@color/transparent"
+            android:layout_marginEnd="8dp"
+            app:cornerRadius="999dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/confirmAuthBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="确认授权"
+            android:textSize="14sp"
+            app:backgroundTint="@color/md_sys_color_primary"
+            app:cornerRadius="999dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

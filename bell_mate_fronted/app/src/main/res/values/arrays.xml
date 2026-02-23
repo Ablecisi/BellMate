@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="repeat_modes">
+        <item>每天</item>
+        <item>工作日</item>
+        <item>周末</item>
+        <item>自定义</item>
+    </string-array>
+
+    <string-array name="ringtones">
+        <item>默认铃声</item>
+        <item>鸟鸣</item>
+        <item>钢琴</item>
+        <item>电子</item>
+        <item>自然</item>
+    </string-array>
+
+    <string-array name="ai_styles">
+        <item>温柔</item>
+        <item>活力</item>
+        <item>严肃</item>
+        <item>可爱</item>
+    </string-array>
+
+    <string-array name="ai_plans">
+        <item>无</item>
+        <item>计划1</item>
+        <item>计划2</item>
+        <item>计划3</item>
+    </string-array>
+
+    <string-array name="languages">
+        <item>简体中文</item>
+        <item>English</item>
+    </string-array>
+
+    <string-array name="interval_units">
+        <item>分钟</item>
+        <item>小时</item>
+        <item>天</item>
+    </string-array>
+
+    <string-array name="batch_modes">
+        <item>按重复次数</item>
+        <item>按结束日期</item>
+    </string-array>
+</resources>
