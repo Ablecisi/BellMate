@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:layout_marginBottom="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/logTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2024-01-01 08:00:00"
+            android:textSize="12sp"
+            android:textColor="@color/md_sys_color_on_surface_variant"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/logAction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="同步到云端"
+            android:textSize="12sp"
+            android:textColor="@color/md_sys_color_on_surface" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/logStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="成功"
+            android:textSize="12sp"
+            android:textColor="@color/md_sys_color_success" />
+
+    </LinearLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/logDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="同步了 5 个闹钟和 3 个计划"
+        android:textSize="11sp"
+        android:textColor="@color/md_sys_color_on_surface_variant"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp" />
+
+</LinearLayout>

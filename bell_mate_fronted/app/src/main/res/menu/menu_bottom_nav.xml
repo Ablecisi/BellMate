@@ -3,5 +3,4 @@
     <item android:id="@+id/nav_alarm" android:title="@string/bottom_nav_bell" android:icon="@drawable/alarm_24px" />
     <item android:id="@+id/nav_plan" android:title="@string/bottom_nav_plan" android:icon="@drawable/task_24px" />
     <item android:id="@+id/nav_my" android:title="@string/bottom_nav_my" android:icon="@drawable/person_heart_24px" />
-    <item android:id="@+id/nav_settings" android:title="@string/bottom_nav_setting" android:icon="@drawable/settings_heart_24px" />
 </menu>

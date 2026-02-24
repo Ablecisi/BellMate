@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.bellmate'
+    namespace = 'com.bellmate'
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -11,24 +11,24 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.bellmate"
-        minSdk 28
-        targetSdk 36
-        versionCode 1
-        versionName "1.0"
+        applicationId = "com.bellmate"
+        minSdk = 28
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildFeatures {
@@ -37,70 +37,12 @@ android {
 }
 
 dependencies {
-    // AndroidX
     implementation libs.appcompat
-    // 这是 Google 的 Material 组件库 ， 用于创建界面
     implementation libs.material
-    // 这是 AndroidX 的 ConstraintLayout ， 用于创建界面
     implementation libs.activity
-    // 这是 AndroidX 的 ConstraintLayout ， 用于创建界面
     implementation libs.constraintlayout
-    // 这是 junit ，同于测试
+    implementation libs.gson
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
-    // 这是 espresso ，同于测试
     androidTestImplementation libs.espresso.core
-
-    // Navigation: 用于实现应用内导航
-    implementation libs.navigation.fragment
-    implementation libs.navigation.ui
-
-    // Room Database: 用于本地数据库存储
-    implementation libs.room.runtime
-    annotationProcessor libs.room.compiler
-
-    // Lifecycle: 用于管理 Android 组件的生命周期
-    implementation libs.lifecycle.viewmodel
-    implementation libs.lifecycle.livedata
-
-    // Hilt: 用于依赖注入
-    implementation libs.hilt.android
-    annotationProcessor libs.hilt.compiler
-
-    // Retrofit + OkHttp: 用于网络请求
-    implementation libs.retrofit
-    implementation libs.converter.gson
-    implementation libs.okhttp
-    implementation libs.logging.interceptor
-
-    // Glide: 用于图片加载
-    implementation libs.glide
-    annotationProcessor libs.compiler
-
-    // WebSocket: 用于实时通信
-    implementation libs.java.websocket
-
-    // CameraX: 用于相机功能
-    implementation libs.camera.core
-    implementation libs.camera.camera2
-    implementation libs.camera.lifecycle
-    implementation libs.camera.view
-
-    // Lottie: 用于动画效果
-    implementation libs.lottie
-
-    // SwipeRefreshLayout: 用于下拉刷新
-    implementation libs.swiperefreshlayout
-
-    // Paging 3: 用于分页加载数据
-    implementation libs.paging.runtime
-
-    // gson: 用于 JSON 解析
-    implementation libs.gson
-
-    // markdown: 用于 Markdown 渲染
-    implementation libs.markdown
-    implementation libs.image
-    implementation libs.image.glide // 用 Glide 加载图片
-    implementation libs.ext.tables
 }

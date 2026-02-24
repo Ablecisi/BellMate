@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/alarmCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:padding="16dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/md_sys_color_surface"
+    app:strokeColor="@color/md_sys_color_surface_variant"
+    app:strokeWidth="1dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- 选中状态的边框 -->
+        <View
+            android:id="@+id/selectedBorder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/selected_alarm_border"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/timeText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="08:00"
+                    android:textSize="30sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/md_sys_color_on_surface" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="end"
+                    android:layout_marginStart="8dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/stateChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="已启用"
+                        android:textSize="12sp"
+                        android:textColor="@color/md_sys_color_success"
+                        android:background="@drawable/state_chip_enabled"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/enabledSwitch"
+                        android:layout_width="48dp"
+                        android:layout_height="28dp"
+                        android:layout_marginTop="8dp"
+                        app:trackTint="@color/switch_track_color"
+                        app:thumbTint="@color/switch_thumb_color"
+                        app:thumbIconTint="@color/switch_thumb_icon_color" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/labelText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="闹钟标签"
+                    android:textSize="14sp"
+                    android:textColor="@color/md_sys_color_on_surface"
+                    android:layout_marginEnd="4dp" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="·"
+                    android:textSize="14sp"
+                    android:textColor="@color/md_sys_color_on_surface_variant"
+                    android:layout_marginEnd="4dp" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/repeatText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="每天"
+                    android:textSize="14sp"
+                    android:textColor="@color/md_sys_color_on_surface" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/ringtoneText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="默认铃声"
+                    android:textSize="12sp"
+                    android:textColor="@color/md_sys_color_on_surface_variant" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</com.google.android.material.card.MaterialCardView>
